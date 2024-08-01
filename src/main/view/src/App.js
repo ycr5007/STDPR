@@ -1,20 +1,25 @@
-import React, {useEffect, useState} from 'react';
-import axios from "axios";
+import React, {useState} from 'react';
+import './App.css'
+
+const hardCalculate = (number) => {
+    console.log("CalCulate");
+    for(let i = 0; i < 99999999; i++) {}
+    return number + 10000;
+}
 
 function App() {
-  const [hello, setHello] = useState('')
+    const [hardNumber, setHardNumber] = useState(1);
 
-  useEffect(() => {
-    axios.get('/api/hello')
-        .then(response => setHello(response.data))
-        .catch(error => console.log(error))
-  }, []);
+    const hardSum = hardCalculate(hardNumber);
 
-  return (
-    <div>
-      Hello World : {hello}
-    </div>
-  );
+    return (
+        <div>
+            <h3>Hard Calculator</h3>
+            <input type="number" value={hardNumber} onChange={(e) => setHardNumber(parseInt(e.target.value))}/>
+
+            <span> + 10000 = {hardSum}</span>
+        </div>
+    );
 }
 
 export default App;
