@@ -1,75 +1,49 @@
-import React, {useState, useMemo, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import './App.css'
 
-/*
-    JavaScript Type
-*   원시(Primitive) 타입 : 변수 내 값(value) 저장
-        String, Number, Boolean, Null, Undefined, BigInt, Symbol
-*   객체(Object) 타입 : value 에 메모리 주소를 지정하며, 메모리 내에 value 값을 저장
-        Object, Array, ...
-*/
+import Box from "./Box";
 
-const hardCalculate = (number) => {
-    // console.log("Hard CalCulate");
-    for(let i = 0; i < 99999999; i++) {}
-    return number + 10000;
-}
-
-const easyCalculate = (number) => {
-    // console.log("Easy CalCulate");
-    return number + 1;
-}
-
-// 함수형 Component - State 변경 시, Rendering
-// Rendering 시, 함수가 호출되며 변수가 초기화 되기 때문에 [hard, easy] 2개 모두 수행된다.
 function App() {
-    const [hardNumber, setHardNumber] = useState(1);
-    const [easyNumber, setEasyNumber] = useState(1);
-
-    // Rendering 마다 실행됨
-    // const hardSum = hardCalculate(hardNumber);
-
-    // useMemo(callback, depndency arr)
-    const hardSum = useMemo(() => {
-        // memoize 값 reutrn
-        return hardCalculate(hardNumber);
-    }, [hardNumber]);
-
-    const easySum = easyCalculate(easyNumber);
-
     const [number, setNumber] = useState(0);
-    const [isKorea, setIsKorea] = useState(true);
+    const [toggle, setToggle] = useState(false);
+    // Rendering 시, 해당 함수가 다시 선언되며 다른 메모리 주소값을 갖기 때문에 useEffect 에서 의존성을 갖지 못한다.
+    // const someFunction = () => {
+    //     console.log(`someFunc number :  ${number}`);
+    //     return;
+    // };
 
-    // Object 타입의 경우, Rendering 을 통해 호출될 때마다 다른 주소값을 갖기 때문에, 의존성 주입이 불가능
-    // const location = { country: isKorea ? '한국' : '외국',};
+    const someFunction = useCallback (() => {
+        console.log(`someFunc number :  ${number}`);
+        return;
+    }, [number]);
 
-    // 이와 같이 Object 타입을 useMemo 를 통해 객체를 Memoize 하여 객체의 의존성 주입을 가능하게 할 수 있음
-    const location = useMemo(() => {
-        return { country: isKorea ? '한국' : '외국'}
-    }, [isKorea]);
-
+    // The 'someFunction' function makes the dependencies of useEffect Hook (at line 15) change on every render. To fix this, wrap the definition of 'someFunction' in its own useCallback() Hook  react-hooks/exhaustive-deps
     useEffect(() => {
-        console.log("useEffect 호출");
-    }, [location]);
+        console.log(`Changed someFunc !!`);
+    }, [someFunction]);
+
+    const [size, setSize] = useState(100);
+
+    const createBoxStyle = useCallback(() => {
+        return {
+            backgroundColor: 'pink',
+            width: `${size}px`,
+            height: `${size}px`,
+        };
+    }, [size]);
 
     return (
         <div>
-            <h3>Hard Calculator</h3>
-            <input type="number" value={hardNumber}
-                   onChange={(e) => setHardNumber(parseInt(e.target.value))}/>
-            <span> + 10000 = {hardSum}</span> <br/>
-            <input type="number" value={easyNumber}
-                   onChange={(e) => setEasyNumber(parseInt(e.target.value))}/>
-            <span> + 1 = {easySum}</span>
-            <hr/>
+            <input type="number" value={number}
+                onChange={(e) => setNumber(e.target.value) }/>
+            <button onClick={() => setToggle(!toggle)}>{toggle.toString()}</button>
+            <br/>
+            <button onClick={someFunction}>Call someFunc</button>
+
             <div>
-                <h3>하루에 몇끼 먹어요?</h3> <br/>
-                <input type="number" value={number}
-                    onChange={(e) => setNumber(e.target.value)}/>
-                <hr/>
-                <h3>어느 나라에 있어요?</h3> <br/>
-                <p>나라 : {location.country}</p>
-                <button onClick={() => setIsKorea(!isKorea)}>비행기 타자</button>
+                <input type="number" value={size}
+                    onChange={(e) => setSize(e.target.value)}/>
+                <Box createBoxStyle={createBoxStyle}/>
             </div>
         </div>
     );
