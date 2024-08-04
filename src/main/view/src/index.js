@@ -5,10 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+// StrictMode : React 개발 시, react 의 문제를 알려주기 때문에 삭제 권장 X
 root.render(
-  <React.StrictMode>
     <App />
-  </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function
