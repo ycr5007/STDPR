@@ -1,50 +1,92 @@
-import React, {useState, useEffect, useCallback} from 'react';
-import './App.css'
+import React, {useState, useReducer} from 'react';
+import Student from "./Student";
 
-import Box from "./Box";
+const ACTION = {
+    UP: "up",
+    DOWN: "down",
+}
 
+const reducer = (state, action) => {
+    // state : 매개변수 호출 시 지정되어있는 state 값을 갖는다.
+    // action : state 변경에 대한 요구 내용
+    switch (action.type) {
+        case ACTION.UP :
+            return state + action.modiNum;
+        case ACTION.DOWN :
+            return state - action.modiNum;
+        default :
+            return state;
+    }
+}
+
+const reducerStudent = (state, action) => {
+    switch(action.type) {
+        case "add" :
+            const name = action.payload.name;
+            const newStudent = {
+                id: Date.now(),
+                name,
+                isHere: false,
+            }
+            return {
+                count: state.count + 1,
+                studentList: [...state.studentList, newStudent],
+            };
+        case "delete" :
+            return {
+                count: state.count - 1,
+                studentList: state.studentList.filter(student => student.id !== action.payload.id),
+            };
+        case "update" :
+            return {
+                count : state.count,
+                studentList: state.studentList.map((student) => {
+                    if(student.id === action.payload.id) {
+                        return {...student, isHere: !student.isHere}
+                    }
+                    return student;
+                }),
+            }
+        default :
+            return state;
+    }
+}
+
+const initialState = {
+    count: 0,
+    studentList: [],
+}
 function App() {
     const [number, setNumber] = useState(0);
-    const [toggle, setToggle] = useState(false);
-    // Rendering 시, 해당 함수가 다시 선언되며 다른 메모리 주소값을 갖기 때문에 useEffect 에서 의존성을 갖지 못한다.
-    // const someFunction = () => {
-    //     console.log(`someFunc number :  ${number}`);
-    //     return;
-    // };
+    const [chanNum, dispatch] = useReducer(reducer, 0);
 
-    const someFunction = useCallback (() => {
-        console.log(`someFunc number :  ${number}`);
-        return;
-    }, [number]);
-
-    // The 'someFunction' function makes the dependencies of useEffect Hook (at line 15) change on every render. To fix this, wrap the definition of 'someFunction' in its own useCallback() Hook  react-hooks/exhaustive-deps
-    useEffect(() => {
-        console.log(`Changed someFunc !!`);
-    }, [someFunction]);
-
-    const [size, setSize] = useState(100);
-
-    const createBoxStyle = useCallback(() => {
-        return {
-            backgroundColor: 'pink',
-            width: `${size}px`,
-            height: `${size}px`,
-        };
-    }, [size]);
-
+    const [name, setName] = useState("");
+    const [studentsInfo, nameDispatch] = useReducer(reducerStudent, initialState);
     return (
         <div>
-            <input type="number" value={number}
-                onChange={(e) => setNumber(e.target.value) }/>
-            <button onClick={() => setToggle(!toggle)}>{toggle.toString()}</button>
-            <br/>
-            <button onClick={someFunction}>Call someFunc</button>
+            <h2>useReducer setNumberTest</h2>
+            <p>num : {chanNum}</p>
+            <input type="number" value={number} step="1000"
+                onChange={(e) => setNumber(parseInt(e.target.value))}/>
+            <button onClick={() => {
+                dispatch({type: ACTION.UP, modiNum: number});
+            }}>Up</button>
+            <button onClick={() => {
+                dispatch({type: ACTION.DOWN, modiNum: number});
+            }}>Down</button>
 
-            <div>
-                <input type="number" value={size}
-                    onChange={(e) => setSize(e.target.value)}/>
-                <Box createBoxStyle={createBoxStyle}/>
-            </div>
+            <hr/>
+
+            <h1>출석부</h1>
+            <p>총 학생 : {studentsInfo.count}</p>
+            <input type="text" placeholder="이름을 입력해주세요." value={name}
+                onChange={(e) => setName(e.target.value)}/>
+            <button onClick={() => {
+                nameDispatch({type: "add", payload: {name}})
+            }}>추가</button>
+            {studentsInfo.studentList.map(student => {
+                return (<Student key={student.id} name={student.name} dispatch={nameDispatch} id={student.id} isHere={student.isHere}/>)
+            })}
         </div>
     );
 }
