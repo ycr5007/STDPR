@@ -1,36 +1,56 @@
-import React, {useState, useMemo, useCallback} from 'react';
-import Child from "./Child";
+import React, {useEffect, useState} from 'react';
+import {useInput} from "./useInput";
+import {useFetch} from "./useFetch";
+
+function displayMessage(message) {
+    alert(message);
+}
+
+const baseUrl = "https://jsonplaceholder.typicode.com";
 
 function App() {
-    const [parentAge, setParentAge] = useState(0);
+    /* custom Hooks (useInput)
+        const [inputValue, setInputValue] = useState('');
 
-    const incrementParentAge = () => {
-        setParentAge(parentAge + 1);
-    }
-
-    console.log('Parent Component Rendering !');
-
-    // Object 의 경우, Parent Component 가 Rendering 될 때, 다른 해시값을 가지며,
-    // React.Memo 를 통해 전달하는 Props 의 변화로 인지하여 Child Component 가 Rendering 된다. (useMemo 사용을 통해 해결)
-    const name = useMemo(() => {
-        return {
-            lastName: '홍',
-            firstName: '길동',
+        const handleChange = (e) => {
+            setInputValue(e.target.value);
         }
-    }, []);
 
-    // Function 의 경우도 위와 마찬가지로 다른 해시값을 가지며,
-    // React.memo 를 통해 전달하는 Props 의 변화로 인지하여 Child Component 가 Rendering 된다. (useCallback 사용을 통해 해결)
-    const tellMe = useCallback(() => {
-        console.log("Run Callback Function")
-    }, []);
+        const handleSubmit = () => {
+            alert(inputValue);
+            setInputValue('');
+        }
+    */
+    const [inputValue, handleChange, handleSubmit] = useInput("Hi", displayMessage);
+
+    /* custom Hooks (useFetch)
+        const [data, setData] = useState(null);
+
+        const fetchUrl = (type) => {
+            // dummy Json Data (posts, users, todos...)
+            fetch(baseUrl + '/' + type)
+                .then((res) => res.json())
+                .then((res) => setData(res));
+        }
+
+        useEffect(() => {
+            fetchUrl("users");
+        }, []);
+    */
+
+    const {data: userData} = useFetch(baseUrl, "users");
+    const {data: postData} = useFetch(baseUrl, "posts");
 
     return (
-        <div style={{border: '2px solid navy', padding: '10px'}}>
-            <h1>👪부모</h1>
-            <p>age: {parentAge}</p>
-            <button onClick={incrementParentAge}>부모 나이 증가</button>
-            <Child name={name} tellMe={tellMe}/>
+        <div>
+            <h1>useInput</h1>
+            <input type="text" value={inputValue} onChange={handleChange}/>
+            <button onClick={handleSubmit}>확인</button>
+            <hr/>
+            <h1>useFetch - USER</h1>
+            {userData && <pre>{JSON.stringify(userData[0], null, 2)}</pre>}
+            <h1>useFetch - POST</h1>
+            {postData && <pre>{JSON.stringify(postData[0], null, 2)}</pre>}
         </div>
     );
 }
