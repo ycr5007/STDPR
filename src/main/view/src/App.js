@@ -1,61 +1,70 @@
-import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
+import "./App.css";
+import {useDebounce} from "./Debounce";
 
-function getNumbers() {
-    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+function fetchDataFromServer(value) {
+    if(!value) {
+        return [];
+    }
+
+    console.log("From Server Data...");
+
+    const users = [
+        {name: "김철수", age: "22"},
+        {name: "이영희", age: "23"},
+        {name: "김민수", age: "27"},
+        {name: "홍길동", age: "32"},
+        {name: "홍민영", age: "21"},
+        {name: "김종민", age: "52"},
+    ];
+
+    return users.filter(user => user.name.startsWith(value));
 }
 
 function App() {
-    const [count, setCount] = useState(0);
+    const [input, setInput] = useState("");
+    // const [debouncedInput, setDebouncedInput] = useState(input);
+    const debouncedInput = useDebounce(input, 300); // Custom Hooks ( useDebounce )
+    const [result, setResult] = useState([]);
 
-    // Component 가 화면에 그려진 이후 실행 ( 비동기적 실행 )
     // useEffect(() => {
-    //     console.log("useEffect : ", count);
-    // }, [count]);
+    //     const timerID= setTimeout(() => {
+    //         setDebouncedInput(input);
+    //     }, 1000);
+    //
+    //     // useEffect CleanUp 함수를 활용해, 반복해서 일어나는 timer 는 CLear 하고, 마지막으로 실행된 timer 만 정상적으로 처리될 수 있게 한다.
+    //     return () => {
+    //         clearTimeout(timerID);
+    //     }
+    // }, [input]);
 
-    // Component 가 화면에 그려지기 이전에 실행 ( 동기적 실행, 무거운 작업 | 사용량이 많을 경우 App 이 무거워질 수 있음 )
-    // useLayoutEffect(() => {
-    //     console.log("useLayoutEffect : ", count);
-    // }, [count]);
-
-    const handleCountUpdate = () => {
-        setCount(count + 1);
-    }
-
-    const [numbers, setNumbers] = useState([]);
-    const ref = useRef(null);
+    // onChange 이벤트로 인해, input 값이 변경될 떄마다 호출한다. ( 서버 자원 낭비 )
+    // useEffect(() => {
+    //     const users = fetchDataFromServer(input);
+    //     setResult(users);
+    // }, [input]);
 
     useEffect(() => {
-        const nums = getNumbers();
-        setNumbers(nums);
-    }, []);
+        const users = fetchDataFromServer(debouncedInput);
+        setResult(users);
+    }, [debouncedInput]);
 
-    // 사용자에게 보여지는 UI 를 조금 더 정교하게 동작해야하는 경우, useLayoutEffect 를 사용한다
-    useLayoutEffect(() => {
-        if(numbers.length === null) {
-            return;
-        }
-
-        // 지연 발생
-        for(let i = 0; i < 30000000; i++) {}
-
-        ref.current.scrollTop = ref.current.scrollHeight;
-    }, [numbers]);
     return (
-        <div>
-            <p>Count : {count}</p>
-            <button onClick={handleCountUpdate}>Update</button>
-            <hr/>
-            <button onClick={() => setNumbers([])}>Reset</button>
-            <div ref={ref} style={{
-                height: "300px",
-                border: "1px solid blue",
-                overflow: "scroll",
-            }}>
-                {numbers.map((number, idx) => <p key={idx}>{number}</p>)}
+        <div className="container">
+            <div className="search-container">
+                <input type="text" placeholder="Search" value={input}
+                    onChange={(event) => setInput(event.target.value)}/>
+                <ul>
+                    {result.map((user) => (
+                        <li key={user.name}>
+                            <span>{user.name}</span>
+                            <span>{user.age}</span>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
 }
-
 
 export default App;
