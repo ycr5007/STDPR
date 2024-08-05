@@ -1,41 +1,61 @@
-import React, {useEffect, useId, useRef} from 'react';
+import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
+
+function getNumbers() {
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+}
 
 function App() {
-    // useId 를 통한 Componenet 의 고유 ID 값을 생성할 수 있음
-    return (
-        <div>
-            <MyInput />
-            <hr/>
-            <MyInput />
-        </div>
-    );
-}
+    const [count, setCount] = useState(0);
 
-function MyInput() {
-    // 문자열 형태, ID 값 반환
-    const id = useId(); // :r0:
-    // 1 개의 Componenet 에서, 각 Input 의 고유값을 지정할 경우, `id + tag` 형태로 지정한다.
-    // JavaScript 에서의 Math.random Or UUID
+    // Component 가 화면에 그려진 이후 실행 ( 비동기적 실행 )
+    // useEffect(() => {
+    //     console.log("useEffect : ", count);
+    // }, [count]);
 
-    const ref = useRef();
+    // Component 가 화면에 그려지기 이전에 실행 ( 동기적 실행, 무거운 작업 | 사용량이 많을 경우 App 이 무거워질 수 있음 )
+    // useLayoutEffect(() => {
+    //     console.log("useLayoutEffect : ", count);
+    // }, [count]);
+
+    const handleCountUpdate = () => {
+        setCount(count + 1);
+    }
+
+    const [numbers, setNumbers] = useState([]);
+    const ref = useRef(null);
 
     useEffect(() => {
-        // useId 시스템을 안정적으로 사용 가능하다.
-        // ServerSide Rendering 개발 시, 서버에서 Rendering 된 결과물과 Client 의 결과물이 일치해야하기 때문에, useId를 통해 안정성을 높일 수 있음
-        // const element = document.querySelector(id); // id 의 " : " querySelector 동작 X
-        const element = ref.current;
-        // React 에서는 DOM 요소 접근시, useRef 사용으로 가능 (React 에서의 querySelector 사용 지양한다.)
-        console.log(element);
+        const nums = getNumbers();
+        setNumbers(nums);
     }, []);
+
+    // 사용자에게 보여지는 UI 를 조금 더 정교하게 동작해야하는 경우, useLayoutEffect 를 사용한다
+    useLayoutEffect(() => {
+        if(numbers.length === null) {
+            return;
+        }
+
+        // 지연 발생
+        for(let i = 0; i < 30000000; i++) {}
+
+        ref.current.scrollTop = ref.current.scrollHeight;
+    }, [numbers]);
     return (
         <div>
-            <button id="btn">버튼</button><br/>
-            <label htmlFor={`${id}-name`}>{`${id}-name`} 이름</label>
-            <input id={`${id}-name`} ref={ref}/> <br/>
-            <label htmlFor={`${id}-age`}>{`${id}-age`} 나이</label>
-            <input id={`${id}-age`}/>
+            <p>Count : {count}</p>
+            <button onClick={handleCountUpdate}>Update</button>
+            <hr/>
+            <button onClick={() => setNumbers([])}>Reset</button>
+            <div ref={ref} style={{
+                height: "300px",
+                border: "1px solid blue",
+                overflow: "scroll",
+            }}>
+                {numbers.map((number, idx) => <p key={idx}>{number}</p>)}
+            </div>
         </div>
     );
 }
+
 
 export default App;
