@@ -1,2 +1,4 @@
-package com.study.stdpr.entity;public class LoginHist {
+package com.study.stdpr.entity;
+
+public class LoginHist {
 }
